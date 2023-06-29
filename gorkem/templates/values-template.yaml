@@ -1,0 +1,27 @@
+#@data/values
+---
+ingress_domain: tap.corp.com
+image_registry: harbor.tap.corp.com
+tkg_cluster_name: gorkem
+tap_version: 1.5.2
+profile: full # supports only full profile for now
+supply_chain: basic # or testing or testing_scanning
+tanzuNet_username: 'username@corp.com'
+tanzuNet_password: 'password'
+pivnet_token: "token-here"
+image_registry_user: admin
+image_registry_password: VMware1!
+image_registry_tap: tap-15
+image_registry_build: tap-15/build
+image_registry_supply_chain: tap-15/supplychain
+acs: true
+acs_version: 2.0.0
+scg: true
+scg_version: 2.0.0-tap.3
+airgapped: true
+git_repo: git.tap.corp.com
+git_user: tanzu
+git_password: VMware1!
+tbs_full_deps: true
+tbs_version: 1.10.8
+maven_repo: https://nexus-80.tap.corp.com/repository/maven-central/

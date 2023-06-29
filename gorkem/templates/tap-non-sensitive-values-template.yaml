@@ -1,0 +1,206 @@
+#@ load("@ytt:data", "data")
+#@yaml/map-key-override
+---
+tap_install:
+  values:
+    shared:
+      ingress_domain: #@ data.values.ingress_domain
+      #@ if data.values.ca_cert_data:
+      ingress_issuer: local-issuer
+      #@ end
+      image_registry:
+        project_path: #@ "{}/{}".format(data.values.image_registry, data.values.image_registry_tap)
+      #@ if "ca_cert_data" in data.values:
+      ca_cert_data: #@ data.values.ca_cert_data
+      #@ end
+    
+    ceip_policy_disclosed: true
+    
+    profile: #@ data.values.profile
+    
+    supply_chain: #@ data.values.supply_chain
+    
+    ootb_supply_chain_basic:
+      registry:
+        server: #@ "{}".format(data.values.image_registry)
+        repository: #@ "{}".format(data.values.image_registry_supply_chain)
+      gitops:
+        #@ if/end not data.values.git_repo:
+        ssh_secret: ""
+        #@ if/end data.values.git_repo:
+        ssh_secret: "git-secret"
+      #@ if data.values.maven_repo:
+      maven:
+        repository:
+          url: #@ data.values.maven_repo
+          secret_name: "maven-credentials"
+      #@ end
+    
+    ootb_supply_chain_testing:
+      registry:
+        server: #@ "{}".format(data.values.image_registry)
+        repository: #@ "{}".format(data.values.image_registry_supply_chain)
+      gitops:
+        #@ if/end not data.values.git_repo:
+        ssh_secret: ""
+        #@ if/end data.values.git_repo:
+        ssh_secret: "git-secret"
+      #@ if data.values.maven_repo:
+      maven:
+        repository:
+          url: #@ data.values.maven_repo
+          secret_name: "maven-credentials"
+      #@ end
+    
+    ootb_supply_chain_testing_scanning:
+      registry:
+        server: #@ "{}".format(data.values.image_registry)
+        repository: #@ "{}".format(data.values.image_registry_supply_chain)
+      gitops:
+        #@ if/end not data.values.git_repo:
+        ssh_secret: ""
+        #@ if/end data.values.git_repo:
+        ssh_secret: "git-secret"
+      #@ if data.values.maven_repo:
+      maven:
+        repository:
+          url: #@ data.values.maven_repo
+          secret_name: "maven-credentials"
+      #@ end
+
+    contour:
+      envoy:
+        service:
+          type: LoadBalancer
+    
+    buildservice:
+      kp_default_repository: #@ "{}/{}".format(data.values.image_registry, data.values.image_registry_build)
+      kp_default_repository_username: #@ data.values.image_registry_user
+      #@ if data.values.airgapped:
+      exclude_dependencies: true
+      #@ end
+    
+    tap_gui:
+      service_type: ClusterIP
+      metadataStoreAutoconfiguration: true
+      ingressEnabled: "true"
+      app_config:
+        catalog:
+          locations:
+            - type: url
+              target: https://github.com/MoSehsah/bank-demo/blob/main/catalog/catalog-info.yaml
+        backend:
+          reading:
+            allow:
+              - host: #@ data.values.git_repo
+        auth:
+          allowGuestAccess: true
+          environment: development
+          session:
+            secret: secretvalue
+          providers:
+            oidc:
+              development:
+                clientId: tap-auth
+                clientSecret: secretvalue
+                metadataUrl: #@ "https://dex.{}/.well-known/openid-configuration".format(data.values.ingress_domain)
+    
+    cnrs:
+      domain_template: "{{.Name}}-{{.Namespace}}.{{.Domain}}"
+      #@ if data.values.ca_cert_data:
+      ingress_issuer: local-issuer
+      #@ end
+    
+    metadata_store:
+      ns_for_export_app_cert: "*"
+      app_service_type: ClusterIP
+    
+    scanning:
+      metadataStore:
+        url: ""
+    
+    grype:
+      targetImagePullSecret: "scanner-secret-ref"
+      #@ if data.values.airgapped:
+      db:
+        dbUpdateUrl: #@ "https://minio.{}/grype/databases/listing.json".format(data.values.ingress_domain)
+      #@ end
+
+    #@ if data.values.airgapped:
+    crossplane:
+      registryCaBundleConfig:
+        name: ca-bundle-config
+        key: ca-bundle
+    #@ end
+
+    #@ if data.values.airgapped:
+    bitnami_services:
+      mysql:
+        helm_chart:
+          repo: #@ "oci://{}/bitnami/charts".format(data.values.image_registry)
+          version: 9.8.1
+          chart_pull_secret_ref:
+            name: chart-pull
+            namespace: default
+          container_pull_secret_ref:
+            name: container-pull
+            namespace: default
+      postgresql:
+        helm_chart:
+          repo: #@ "oci://{}/bitnami/charts".format(data.values.image_registry)
+          version: 12.3.1
+          chart_pull_secret_ref:
+            name: chart-pull
+            namespace: default
+          container_pull_secret_ref:
+            name: container-pull
+            namespace: default
+      rabbitmq:
+        helm_chart:
+          repo: #@ "oci://{}/bitnami/charts".format(data.values.image_registry)
+          version: 11.14.2
+          chart_pull_secret_ref:
+            name: chart-pull
+            namespace: default
+          container_pull_secret_ref:
+            name: container-pull
+            namespace: default
+      redis:
+        helm_chart:
+          repo: #@ "oci://{}/bitnami/charts".format(data.values.image_registry)
+          version: 17.10.0
+          chart_pull_secret_ref:
+            name: chart-pull
+            namespace: default
+          container_pull_secret_ref:
+            name: container-pull
+            namespace: default
+    #@ end
+
+    policy:
+      tuf_enabled: false
+    tap_telemetry:
+      installed_for_vmware_internal_use: "true"
+
+    namespace_provisioner:
+      controller: false
+      gitops_install:
+        ref: origin/main
+        subPath: gorkem/namespace-provisioner/namespaces
+        url: https://github.com/gorkemozlu/tap-gitops-ri.git
+      additional_sources:
+      - git:
+          ref: origin/main
+          subPath: gorkem/namespace-provisioner/resources
+          url: https://github.com/gorkemozlu/tap-gitops-ri.git
+        path: _ytt_lib/resources
+      #@ if/end data.values.git_repo:
+      import_data_values_secrets:
+      - name: workload-git-auth
+        namespace: tap-install
+        create_export: true
+      #@ if/end data.values.airgapped:
+      overlay_secrets:
+      - name: grype-airgap-overlay-override
+        namespace: tap-install
+        create_export: true

@@ -1,0 +1,42 @@
+#@ load("@ytt:data", "data")
+---
+apiVersion: kappctrl.k14s.io/v1alpha1
+kind: App
+metadata:
+  name: dependent-resources
+  namespace: tanzu-sync
+  annotations:
+    kapp.k14s.io/change-rule.0: "upsert after upserting contour"
+spec:
+  serviceAccountName: sync-sa
+  fetch:
+    - git:
+        ref: origin/main
+        url: #@ data.values.git_push_repo
+        subPath: clusters/full-profile/cluster-config/dependant-resources/tools
+  template:
+    - ytt: {}
+  deploy:
+    - kapp:
+        rawOptions: ["--dangerous-allow-empty-list-of-resources=true"]
+---
+apiVersion: kappctrl.k14s.io/v1alpha1
+kind: App
+metadata:
+  name: overlays
+  namespace: tanzu-sync
+  annotations:
+    kapp.k14s.io/change-rule.0: upsert after upserting contour
+spec:
+  serviceAccountName: sync-sa
+  fetch:
+  - git:
+      ref: origin/main
+      url: #@ data.values.git_push_repo
+      subPath: clusters/full-profile/cluster-config/dependant-resources/overlays
+  template:
+  - ytt: {}
+  deploy:
+  - kapp:
+      rawOptions:
+      - --dangerous-allow-empty-list-of-resources=true

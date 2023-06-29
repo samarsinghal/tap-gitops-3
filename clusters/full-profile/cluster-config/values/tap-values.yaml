@@ -1,0 +1,185 @@
+tap_install:
+  values:
+    shared:
+      ingress_domain: tap.aws.samarsinghal.com
+      ingress_issuer: local-issuer
+      image_registry:
+        project_path: harbor.aws.samarsinghal.com/tap-152
+      ca_cert_data: |
+        -----BEGIN CERTIFICATE-----
+        MIIFEzCCA3ugAwIBAgIQPCNyibwNU68KxTHCayp9kTANBgkqhkiG9w0BAQsFADCB
+        oTEeMBwGA1UEChMVbWtjZXJ0IGRldmVsb3BtZW50IENBMTswOQYDVQQLDDJzYW1h
+        cnNpbmdoYWxAc3NhbWFyLWEwMS52bXdhcmUuY29tIChzYW1hciBzaW5naGFsKTFC
+        MEAGA1UEAww5bWtjZXJ0IHNhbWFyc2luZ2hhbEBzc2FtYXItYTAxLnZtd2FyZS5j
+        b20gKHNhbWFyIHNpbmdoYWwpMB4XDTIwMDkyODIxMjU0M1oXDTMwMDkyODIxMjU0
+        M1owgaExHjAcBgNVBAoTFW1rY2VydCBkZXZlbG9wbWVudCBDQTE7MDkGA1UECwwy
+        c2FtYXJzaW5naGFsQHNzYW1hci1hMDEudm13YXJlLmNvbSAoc2FtYXIgc2luZ2hh
+        bCkxQjBABgNVBAMMOW1rY2VydCBzYW1hcnNpbmdoYWxAc3NhbWFyLWEwMS52bXdh
+        cmUuY29tIChzYW1hciBzaW5naGFsKTCCAaIwDQYJKoZIhvcNAQEBBQADggGPADCC
+        AYoCggGBAN1L5py6wppiwiiat3cr+l+Tm17uJRD5vSvAqfJK3wlPSnYEG6Q/Q255
+        lkoHlkD0FfAoBWW/DiKHn/O1p0P242nmvdTlNwBNByPgRK0D81WEIcmXp7hEpmcw
+        JbJTnhUAXKhiXJvssFJgnsgX34xiRZjMxkBVassXKeW0CnvhEC6CcxYlUBTBD11y
+        EqYSUu6hLX8JtGUghDJ/sQTk4IJNxOHq8kLJvQb5j7E4MqCTgvRPQTVNPctx+lCW
+        7SYvRjtxJQOsx+FtPhFmEiF7+nYy1p9XPXSoubBv5vQcBr9Vf5usepZd/214NdLJ
+        eDyBl3Fgf+SabJziq23EC+BWjrI35AesveLiD5UMhu27dg2MOW9znWbHbwycP1Fv
+        zvPF9EFp17xrr7/m3BmzpAKdAdIh5KKlzqBqh74NEIBsCeeky+hzPMkrfMCY5IOJ
+        r1+dfHmUmd5vltNsvRLuZE5tWMSdmjfLMsAwxbZkGshagzaVY037HKjXK/34nbl4
+        0qIPGKT5NQIDAQABo0UwQzAOBgNVHQ8BAf8EBAMCAgQwEgYDVR0TAQH/BAgwBgEB
+        /wIBADAdBgNVHQ4EFgQUSFj+iW8vTQtqDQ+DhBjqdews000wDQYJKoZIhvcNAQEL
+        BQADggGBAIK8CB63rgUe91d28XB167P7fAs3EnSA6hJ1qDpsFXHonIHDm80PPkSw
+        WcqlTFHtKSLAqLZPJ4f0EALLjYEBRFKxBTsu3xk9gSQ+9zmD5NWRq+vqPCyIGCFo
+        lsEsOm+X8lzQBmEvmtYjWD7w9RfaVEgQfIlt5948fjNntLwT9pH2cnqL8WV+Loka
+        +jpusnmuuJxbVWESM4S7fw/EzlF8pW02W9HyiOqRyg4zayzjYzayBNlJQZvZ1A2i
+        xkHkHmxUl+c5pzu05c8h9b8S1+MRY31TduR+6PceA1KsVMYRrG5FMFHZowKXkPXd
+        vG0ymwA/cQMQ4GRzBhc04oiQn8xrpJexW1D+PwQX0vidtnyDzvwVzDhTXafQbCw0
+        sd9rjZTVtPmSZk1gE9f3sLFoe+jFf4Sp+xy7xHk0PEzNXv1iJx+B8jwyfG+eqsJd
+        +em9WVYDT04GBnJ0SJAtJeYp61h1jfiB0HI+HQZtgPgBbSfkDNhYrcP+XhWXqY6o
+        1tOULrPpZA==
+        -----END CERTIFICATE-----
+    ceip_policy_disclosed: true
+    profile: full
+    supply_chain: basic
+    ootb_supply_chain_basic:
+      registry:
+        server: harbor.aws.samarsinghal.com
+        repository: tap-152/supplychain
+      gitops:
+        ssh_secret: git-secret
+      maven:
+        repository:
+          url: https://nexus-80.aws.samarsinghal.com/repository/maven-central/
+          secret_name: maven-credentials
+    ootb_supply_chain_testing:
+      registry:
+        server: harbor.aws.samarsinghal.com
+        repository: tap-152/supplychain
+      gitops:
+        ssh_secret: git-secret
+      maven:
+        repository:
+          url: https://nexus-80.aws.samarsinghal.com/repository/maven-central/
+          secret_name: maven-credentials
+    ootb_supply_chain_testing_scanning:
+      registry:
+        server: harbor.aws.samarsinghal.com
+        repository: tap-152/supplychain
+      gitops:
+        ssh_secret: git-secret
+      maven:
+        repository:
+          url: https://nexus-80.aws.samarsinghal.com/repository/maven-central/
+          secret_name: maven-credentials
+    contour:
+      envoy:
+        service:
+          type: LoadBalancer
+    buildservice:
+      kp_default_repository: harbor.aws.samarsinghal.com/tap-152/build
+      kp_default_repository_username: admin
+      exclude_dependencies: true
+    tap_gui:
+      service_type: ClusterIP
+      metadataStoreAutoconfiguration: true
+      ingressEnabled: "true"
+      app_config:
+        catalog:
+          locations:
+          - type: url
+            target: https://github.com/MoSehsah/bank-demo/blob/main/catalog/catalog-info.yaml
+        backend:
+          reading:
+            allow:
+            - host: github.com
+        auth:
+          allowGuestAccess: true
+          environment: development
+          session:
+            secret: secretvalue
+          providers:
+            oidc:
+              development:
+                clientId: tap-auth
+                clientSecret: secretvalue
+                metadataUrl: https://dex.tap.aws.samarsinghal.com/.well-known/openid-configuration
+    cnrs:
+      domain_template: '{{.Name}}-{{.Namespace}}.{{.Domain}}'
+      ingress_issuer: local-issuer
+    metadata_store:
+      ns_for_export_app_cert: '*'
+      app_service_type: ClusterIP
+    scanning:
+      metadataStore:
+        url: ""
+    grype:
+      targetImagePullSecret: scanner-secret-ref
+      db:
+        dbUpdateUrl: https://minio.tap.aws.samarsinghal.com/grype/databases/listing.json
+    crossplane:
+      registryCaBundleConfig:
+        name: ca-bundle-config
+        key: ca-bundle
+    bitnami_services:
+      mysql:
+        helm_chart:
+          repo: oci://harbor.aws.samarsinghal.com/bitnami/charts
+          version: 9.8.1
+          chart_pull_secret_ref:
+            name: chart-pull
+            namespace: default
+          container_pull_secret_ref:
+            name: container-pull
+            namespace: default
+      postgresql:
+        helm_chart:
+          repo: oci://harbor.aws.samarsinghal.com/bitnami/charts
+          version: 12.3.1
+          chart_pull_secret_ref:
+            name: chart-pull
+            namespace: default
+          container_pull_secret_ref:
+            name: container-pull
+            namespace: default
+      rabbitmq:
+        helm_chart:
+          repo: oci://harbor.aws.samarsinghal.com/bitnami/charts
+          version: 11.14.2
+          chart_pull_secret_ref:
+            name: chart-pull
+            namespace: default
+          container_pull_secret_ref:
+            name: container-pull
+            namespace: default
+      redis:
+        helm_chart:
+          repo: oci://harbor.aws.samarsinghal.com/bitnami/charts
+          version: 17.10.0
+          chart_pull_secret_ref:
+            name: chart-pull
+            namespace: default
+          container_pull_secret_ref:
+            name: container-pull
+            namespace: default
+    policy:
+      tuf_enabled: false
+    tap_telemetry:
+      installed_for_vmware_internal_use: "true"
+    namespace_provisioner:
+      controller: false
+      gitops_install:
+        ref: origin/main
+        subPath: gorkem/namespace-provisioner/namespaces
+        url: https://github.com/gorkemozlu/tap-gitops-ri.git
+      additional_sources:
+      - git:
+          ref: origin/main
+          subPath: gorkem/namespace-provisioner/resources
+          url: https://github.com/gorkemozlu/tap-gitops-ri.git
+        path: _ytt_lib/resources
+      import_data_values_secrets:
+      - name: workload-git-auth
+        namespace: tap-install
+        create_export: true
+      overlay_secrets:
+      - name: grype-airgap-overlay-override
+        namespace: tap-install
+        create_export: true

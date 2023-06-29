@@ -1,0 +1,20 @@
+#@data/values
+---
+#! The only required parameter is the name of the namespace. All additional values provided here like scanpolicy and pipeline
+#! for a namespace will be available under data.values for templating additional sources as data.values.scanpolicy and data.values.pipeline respectively
+namespaces:
+- name: my-apps
+  scanpolicy: relaxed
+  pipeline:
+  - java
+  - dotnet
+- name: dev
+  scanpolicy: relaxed
+  pipeline:
+  - java
+  - dotnet
+- name: staging
+  scanpolicy: strict
+  pipeline:
+  - java
+  - dotnet

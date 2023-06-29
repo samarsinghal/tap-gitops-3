@@ -1,0 +1,37 @@
+#@ load("@ytt:data", "data")
+#@yaml/text-templated-strings
+#@ def in_list(key, list):
+#@  return (hasattr(data.values.tap_values.ootb_supply_chain_basic.gitops, key) and (data.values.tap_values.ootb_supply_chain_basic.gitops[key] in list) or hasattr(data.values.tap_values.ootb_supply_chain_testing.gitops, key) and (data.values.tap_values.ootb_supply_chain_testing.gitops[key] in list) or hasattr(data.values.tap_values.ootb_supply_chain_testing_scanning.gitops, key) and (data.values.tap_values.ootb_supply_chain_testing_scanning.gitops[key] in list))
+#@ end
+#@ if/end not in_list('ssh_secret', ['']):
+---
+#@ maven_repo = "https://nexus-80.{}/repository/maven-central/".format(data.values.imported.git.ingress_domain)
+#@ username = data.values.imported.git.username
+#@ password = data.values.imported.git.password
+apiVersion: v1
+kind: Secret
+metadata:
+  name: settings-xml
+type: service.binding/maven
+stringData:
+  type: maven
+  provider: sample
+  settings.xml: |
+    <settings xmlns="http://maven.apache.org/SETTINGS/1.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+      xsi:schemaLocation="http://maven.apache.org/SETTINGS/1.0.0 https://maven.apache.org/xsd/settings-1.0.0.xsd">
+        <mirrors>
+            <mirror>
+                <id>reposilite</id>
+                <name>Tanzu seal Internal Repo</name>
+                <url>(@= maven_repo @)</url>
+                <mirrorOf>*</mirrorOf>
+            </mirror>
+        </mirrors>
+        <servers>
+             <server>
+                <id>reposilite</id>
+                <username>(@= username @)</username>
+                <password>(@= password @)</password>
+             </server>
+        </servers>
+    </settings>

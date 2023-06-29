@@ -1,0 +1,17 @@
+#@ load("@ytt:data", "data")
+---
+#@ if data.values.acs.enabled:
+apiVersion: packaging.carvel.dev/v1alpha1
+kind: PackageInstall
+metadata:
+  name: acs
+  namespace: tap-install
+  annotations:
+    kapp.k14s.io/change-group: pkgi
+spec:
+  serviceAccountName: tap-installer-sa
+  packageRef:
+    refName: application-configuration-service.tanzu.vmware.com
+    versionSelection:
+      constraints: #@ data.values.acs.pkgr_version
+#@ end

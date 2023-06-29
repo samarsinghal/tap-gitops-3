@@ -1,0 +1,33 @@
+apiVersion: tekton.dev/v1beta1
+kind: Pipeline
+metadata:
+  labels:
+    apps.tanzu.vmware.com/pipeline: test
+  name: developer-defined-tekton-pipeline
+  namespace: my-apps
+spec:
+  params:
+  - name: source-url
+    type: string
+  - name: source-revision
+    type: string
+  tasks:
+  - name: test
+    params:
+    - name: source-url
+      value: $(params.source-url)
+    - name: source-revision
+      value: $(params.source-revision)
+    taskSpec:
+      metadata: {}
+      params:
+      - name: source-url
+        type: string
+      - name: source-revision
+        type: string
+      spec: null
+      steps:
+      - image: projects.registry.vmware.com/tanzu_meta_pocs/tools/gradle:latest
+        name: test
+        resources: {}
+        script: cd `mktemp -d`

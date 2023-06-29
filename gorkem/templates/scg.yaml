@@ -1,0 +1,17 @@
+#@ load("@ytt:data", "data")
+---
+#@ if data.values.scg.enabled:
+apiVersion: packaging.carvel.dev/v1alpha1
+kind: PackageInstall
+metadata:
+  name: scg
+  namespace: tap-install
+  annotations:
+    kapp.k14s.io/change-group: pkgi
+spec:
+  serviceAccountName: tap-installer-sa
+  packageRef:
+    refName: spring-cloud-gateway.tanzu.vmware.com
+    versionSelection:
+      constraints: #@ data.values.scg.pkgr_version
+#@ end

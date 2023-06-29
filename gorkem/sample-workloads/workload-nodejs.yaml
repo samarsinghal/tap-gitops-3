@@ -1,0 +1,28 @@
+apiVersion: carto.run/v1alpha1
+kind: Workload
+metadata:
+  name: node-express
+  labels:
+    apps.tanzu.vmware.com/workload-type: web
+    app.kubernetes.io/part-of: node-express
+    apps.tanzu.vmware.com/has-tests: "true"
+spec:
+  params:
+  - name: testing_pipeline_matching_labels 
+    value:
+      apps.tanzu.vmware.com/pipeline: test
+      apps.tanzu.vmware.com/language: nodejs
+  - name: scanning_source_policy
+    value: scan-policy-relaxed
+  - name: scanning_image_policy
+    value: scan-policy-relaxed
+  - name: buildServiceBindings
+    value:
+    - kind: Secret
+      name: npmrc
+  source:
+    git:
+      ref:
+        branch: main
+      url: https://git.tmc.h2o-4-10367.h2o.vmware.com/tanzu/node-express.git
+#https://github.com/gorkemozlu/node-express

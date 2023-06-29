@@ -1,0 +1,18 @@
+#@ load("@ytt:data", "data")
+---
+#@ if data.values.tbs_full_deps:
+tbs_full_dependencies:
+  enabled: #@ data.values.tbs_full_deps
+  pkgr_version: #@ data.values.tbs_version
+  pkgr_repo_url: #@ "{}/tap-packages/tbs-full-deps:{}".format(data.values.image_registry,data.values.tbs_version)
+#@ end
+#@ if data.values.acs:
+acs:
+  enabled: true
+  pkgr_version: #@ data.values.acs_version
+#@ end
+#@ if data.values.scg:
+scg:
+  enabled: true
+  pkgr_version: 2.0.0-tap.3
+#@ end

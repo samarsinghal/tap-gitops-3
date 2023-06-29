@@ -1,0 +1,50 @@
+#@ load("@ytt:data", "data")
+#@ def in_list(key, list):
+#@  return hasattr(data.values.tap_values, key) and (data.values.tap_values[key] in list)
+#@ end
+#@ def pipelines(key):
+#@  return hasattr(data.values.pipeline, key)
+#@ end
+#@ def pipelines(key):
+#@   for language in data.values.pipeline:
+#@     if language == key:
+#@       return language
+#@     end
+#@   end
+#@ end
+#! This if condition ensures that this Java Tekton pipeline is only created if the supply chain is testing or testing_scanning, and the TAP profile used is full, iterate or build.
+#@ if/end in_list('supply_chain', ['testing', 'testing_scanning']) and in_list('profile', ['full', 'iterate', 'build']) and pipelines('dotnet') == "dotnet":
+---
+apiVersion: tekton.dev/v1beta1
+kind: Pipeline
+metadata:
+  labels:
+    apps.tanzu.vmware.com/pipeline: test
+    apps.tanzu.vmware.com/language: dotnet
+  name: test-pipeline-dotnet
+spec:
+  params:
+  - name: source-url
+    type: string
+  - name: source-revision
+    type: string
+  tasks:
+  - name: test
+    params:
+    - name: source-url
+      value: $(params.source-url)
+    - name: source-revision
+      value: $(params.source-revision)
+    taskSpec:
+      metadata: {}
+      params:
+      - name: source-url
+        type: string
+      - name: source-revision
+        type: string
+      spec: null
+      steps:
+      - image: projects.registry.vmware.com/tanzu_meta_pocs/tools/gradle:latest
+        name: test
+        resources: {}
+        script: cd `mktemp -d`

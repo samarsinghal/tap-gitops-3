@@ -1,0 +1,18 @@
+#@ load("@ytt:data", "data")
+#@yaml/text-templated-strings
+#@ def in_list(key, list):
+#@  return (hasattr(data.values.tap_values.ootb_supply_chain_basic.gitops, key) and (data.values.tap_values.ootb_supply_chain_basic.gitops[key] in list) or hasattr(data.values.tap_values.ootb_supply_chain_testing.gitops, key) and (data.values.tap_values.ootb_supply_chain_testing.gitops[key] in list) or hasattr(data.values.tap_values.ootb_supply_chain_testing_scanning.gitops, key) and (data.values.tap_values.ootb_supply_chain_testing_scanning.gitops[key] in list))
+#@ end
+#@ if/end not in_list('ssh_secret', ['']):
+---
+#@ npm_repo = "https://nexus-80.{}/repository/npm/".format(data.values.imported.git.ingress_domain)
+apiVersion: v1
+kind: Secret
+metadata:
+  name: npmrc
+type: npmrc
+stringData:
+  type: npmrc
+  provider: sample
+  .npmrc: |
+    registry=(@= npm_repo @)
