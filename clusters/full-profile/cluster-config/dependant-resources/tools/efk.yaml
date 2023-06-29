@@ -1,0 +1,469 @@
+kind: Namespace
+apiVersion: v1
+metadata:
+  name: kube-logging
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: kibana-password
+  namespace: kube-logging
+type: Opaque
+data:
+  password: cGFzc3dvcmQ=
+---
+kind: Service
+apiVersion: v1
+metadata:
+  name: elasticsearch
+  namespace: kube-logging
+  labels:
+    app: elasticsearch
+spec:
+  selector:
+    app: elasticsearch
+  clusterIP: None
+  ports:
+  - port: 9200
+    name: rest
+  - port: 9300
+    name: inter-node
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: elasticsearch
+  namespace: kube-logging
+  labels:
+    app: elasticsearch
+spec:
+  serviceName: elasticsearch
+  replicas: 1
+  selector:
+    matchLabels:
+      app: elasticsearch
+  template:
+    metadata:
+      labels:
+        app: elasticsearch
+    spec:
+      containers:
+      - name: elasticsearch
+        image: harbor.aws.samarsinghal.com/tools/tools/elasticsearch:7.2.1
+        resources:
+          limits:
+            cpu: 1000m
+          requests:
+            cpu: 100m
+        ports:
+        - containerPort: 9200
+          name: rest
+          protocol: TCP
+        - containerPort: 9300
+          name: inter-node
+          protocol: TCP
+        volumeMounts:
+        - name: data
+          mountPath: /usr/share/elasticsearch/data
+        env:
+        - name: cluster.name
+          value: k8s-logs
+        - name: node.name
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.name
+        - name: discovery.seed_hosts
+          value: elasticsearch-0.elasticsearch
+        - name: cluster.initial_master_nodes
+          value: elasticsearch-0
+        - name: ES_JAVA_OPTS
+          value: -Xms512m -Xmx512m
+      initContainers:
+      - name: fix-permissions
+        image: harbor.aws.samarsinghal.com/tools/tools/bitnami-shell:10-debian-10-r138
+        command:
+        - sh
+        - -c
+        - chown -R 1000:1000 /usr/share/elasticsearch/data
+        securityContext:
+          privileged: true
+        volumeMounts:
+        - name: data
+          mountPath: /usr/share/elasticsearch/data
+      - name: increase-vm-max-map
+        image: harbor.aws.samarsinghal.com/tools/tools/bitnami-shell:10-debian-10-r138
+        command:
+        - sysctl
+        - -w
+        - vm.max_map_count=262144
+        securityContext:
+          privileged: true
+      - name: increase-fd-ulimit
+        image: harbor.aws.samarsinghal.com/tools/tools/bitnami-shell:10-debian-10-r138
+        command:
+        - sh
+        - -c
+        - ulimit -n 65536
+        securityContext:
+          privileged: true
+  volumeClaimTemplates:
+  - metadata:
+      name: data
+      labels:
+        app: elasticsearch
+    spec:
+      accessModes:
+      - ReadWriteOnce
+      resources:
+        requests:
+          storage: 40Gi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: kibana
+  namespace: kube-logging
+  labels:
+    app: kibana
+spec:
+  type: ClusterIP
+  ports:
+  - port: 5601
+  selector:
+    app: kibana
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: kibana
+  namespace: kube-logging
+  labels:
+    app: kibana
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: kibana
+  template:
+    metadata:
+      labels:
+        app: kibana
+    spec:
+      containers:
+      - name: kibana
+        image: harbor.aws.samarsinghal.com/tools/tools/kibana:7.2.1
+        resources:
+          limits:
+            cpu: 1000m
+            memory: 1Gi
+          requests:
+            cpu: 700m
+            memory: 1Gi
+        env:
+        - name: ELASTICSEARCH_URL
+          value: http://elasticsearch:9200
+        - name: ELASTICSEARCH_USERNAME
+          value: elastic
+        - name: ELASTICSEARCH_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: kibana-password
+              key: password
+        ports:
+        - containerPort: 5601
+          name: kibana
+          protocol: TCP
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: fluent-bit-sa
+  namespace: kube-logging
+  labels:
+    app: fluent-bit-sa
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: fluent-bit-role
+  labels:
+    app: fluent-bit-role
+rules:
+- nonResourceURLs:
+  - /metrics
+  verbs:
+  - get
+- apiGroups:
+  - ""
+  resources:
+  - namespaces
+  - pods
+  - pods/logs
+  verbs:
+  - get
+  - list
+  - watch
+---
+kind: ClusterRoleBinding
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: fluent-bit-rb
+roleRef:
+  kind: ClusterRole
+  name: fluent-bit-role
+  apiGroup: rbac.authorization.k8s.io
+subjects:
+- kind: ServiceAccount
+  name: fluent-bit-sa
+  namespace: kube-logging
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: fluent-bit-config
+  namespace: kube-logging
+  labels:
+    k8s-app: f-bit-pod
+data:
+  fluent-bit.conf: |
+    [SERVICE]
+        Flush         1
+        Log_Level     info
+        Daemon        off
+        Parsers_File  parsers.conf
+        HTTP_Server   On
+        HTTP_Listen   0.0.0.0
+        HTTP_Port     2020
+
+    @INCLUDE input-kubernetes.conf
+    @INCLUDE filter-kubernetes.conf
+    @INCLUDE output-elasticsearch.conf
+  input-kubernetes.conf: |
+    [INPUT]
+        Name              tail
+        Tag               kube.*
+        Path              /var/log/containers/*.log
+        Parser            docker
+        DB                /var/log/flb_kube.db
+        Mem_Buf_Limit     5MB
+        Skip_Long_Lines   On
+        Refresh_Interval  10
+  filter-kubernetes.conf: |
+    [FILTER]
+        Name                kubernetes
+        Match               kube.*
+        Kube_URL            https://kubernetes.default.svc:443
+        Kube_CA_File        /var/run/secrets/kubernetes.io/serviceaccount/ca.crt
+        Kube_Token_File     /var/run/secrets/kubernetes.io/serviceaccount/token
+        Kube_Tag_Prefix     kube.var.log.containers.*
+        Merge_Log           On
+        Merge_Log_Key       log_processed
+        K8S-Logging.Parser  On
+        K8S-Logging.Exclude Off
+  output-elasticsearch.conf: |
+    [OUTPUT]
+        Name            es
+        Match           *
+        Host            ${FLUENT_ELASTICSEARCH_HOST}
+        Port            ${FLUENT_ELASTICSEARCH_PORT}
+        HTTP_User       ${FLUENT_ELASTICSEARCH_USER}
+        HTTP_Passwd     ${FLUENT_ELASTICSEARCH_PASSWORD}
+        Logstash_Format On
+        Replace_Dots    On
+        Retry_Limit     False
+
+    [FILTER]
+        Name            modify
+        Match           *
+        Add             tkg_cluster tap-full
+  parsers.conf: |
+    [PARSER]
+        Name   apache
+        Format regex
+        Regex  ^(?<host>[^ ]*) [^ ]* (?<user>[^ ]*) \[(?<time>[^\]]*)\] "(?<method>\S+)(?: +(?<path>[^\"]*?)(?: +\S*)?)?" (?<code>[^ ]*) (?<size>[^ ]*)(?: "(?<referer>[^\"]*)" "(?<agent>[^\"]*)")?$
+        Time_Key time
+        Time_Format %d/%b/%Y:%H:%M:%S %z
+
+    [PARSER]
+        Name   apache2
+        Format regex
+        Regex  ^(?<host>[^ ]*) [^ ]* (?<user>[^ ]*) \[(?<time>[^\]]*)\] "(?<method>\S+)(?: +(?<path>[^ ]*) +\S*)?" (?<code>[^ ]*) (?<size>[^ ]*)(?: "(?<referer>[^\"]*)" "(?<agent>[^\"]*)")?$
+        Time_Key time
+        Time_Format %d/%b/%Y:%H:%M:%S %z
+
+    [PARSER]
+        Name   apache_error
+        Format regex
+        Regex  ^\[[^ ]* (?<time>[^\]]*)\] \[(?<level>[^\]]*)\](?: \[pid (?<pid>[^\]]*)\])?( \[client (?<client>[^\]]*)\])? (?<message>.*)$
+
+    [PARSER]
+        Name   nginx
+        Format regex
+        Regex ^(?<remote>[^ ]*) (?<host>[^ ]*) (?<user>[^ ]*) \[(?<time>[^\]]*)\] "(?<method>\S+)(?: +(?<path>[^\"]*?)(?: +\S*)?)?" (?<code>[^ ]*) (?<size>[^ ]*)(?: "(?<referer>[^\"]*)" "(?<agent>[^\"]*)")?$
+        Time_Key time
+        Time_Format %d/%b/%Y:%H:%M:%S %z
+
+    [PARSER]
+        Name   json
+        Format json
+        Time_Key time
+        Time_Format %d/%b/%Y:%H:%M:%S %z
+
+    [PARSER]
+        Name        docker
+        Format      json
+        Time_Key    time
+        Time_Format %Y-%m-%dT%H:%M:%S.%L
+        Time_Keep   On
+
+    [PARSER]
+        Name        syslog
+        Format      regex
+        Regex       ^\<(?<pri>[0-9]+)\>(?<time>[^ ]* {1,2}[^ ]* [^ ]*) (?<host>[^ ]*) (?<ident>[a-zA-Z0-9_\/\.\-]*)(?:\[(?<pid>[0-9]+)\])?(?:[^\:]*\:)? *(?<message>.*)$
+        Time_Key    time
+        Time_Format %b %d %H:%M:%S
+---
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: f-bit-pod
+  namespace: kube-logging
+  labels:
+    k8s-app: fluent-bit-logging
+    version: v1
+    kubernetes.io/cluster-service: "true"
+spec:
+  selector:
+    matchLabels:
+      k8s-app: fluent-bit-logging
+  template:
+    metadata:
+      labels:
+        k8s-app: fluent-bit-logging
+        version: v1
+        kubernetes.io/cluster-service: "true"
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "2020"
+        prometheus.io/path: /api/v1/metrics/prometheus
+    spec:
+      containers:
+      - name: fluent-bit
+        image: harbor.aws.samarsinghal.com/tools/tools/fluent-bit:1.3.11
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 2020
+        env:
+        - name: FLUENT_ELASTICSEARCH_HOST
+          value: elasticsearch
+        - name: FLUENT_ELASTICSEARCH_PORT
+          value: "9200"
+        - name: FLUENT_ELASTICSEARCH_USER
+          value: elastic
+        - name: FLUENT_ELASTICSEARCH_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: kibana-password
+              key: password
+        volumeMounts:
+        - name: varlog
+          mountPath: /var/log
+        - name: varlibdockercontainers
+          mountPath: /var/lib/docker/containers
+          readOnly: true
+        - name: fluent-bit-config
+          mountPath: /fluent-bit/etc/
+      terminationGracePeriodSeconds: 10
+      volumes:
+      - name: varlog
+        hostPath:
+          path: /var/log
+      - name: varlibdockercontainers
+        hostPath:
+          path: /var/lib/docker/containers
+      - name: fluent-bit-config
+        configMap:
+          name: fluent-bit-config
+      serviceAccountName: fluent-bit-sa
+      tolerations:
+      - key: node-role.kubernetes.io/master
+        operator: Exists
+        effect: NoSchedule
+      - operator: Exists
+        effect: NoExecute
+      - operator: Exists
+        effect: NoSchedule
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: elastic-tls
+  namespace: kube-logging
+spec:
+  commonName: elasticsearch.tap.aws.samarsinghal.com
+  dnsNames:
+  - elasticsearch.tap.aws.samarsinghal.com
+  issuerRef:
+    kind: ClusterIssuer
+    name: local-issuer
+  secretName: elastic-tls
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: kibana-tls
+  namespace: kube-logging
+spec:
+  commonName: kibana.tap.aws.samarsinghal.com
+  dnsNames:
+  - kibana.tap.aws.samarsinghal.com
+  issuerRef:
+    kind: ClusterIssuer
+    name: local-issuer
+  secretName: kibana-tls
+---
+apiVersion: projectcontour.io/v1
+kind: HTTPProxy
+metadata:
+  labels:
+    app: elasticsearch
+  name: elasticsearch-httpproxy
+  namespace: kube-logging
+spec:
+  routes:
+  - conditions:
+    - prefix: /
+    pathRewritePolicy:
+      replacePrefix:
+      - prefix: /
+        replacement: /
+    services:
+    - name: elasticsearch
+      port: 9200
+  virtualhost:
+    fqdn: elasticsearch.tap.aws.samarsinghal.com
+    tls:
+      secretName: elastic-tls
+---
+apiVersion: projectcontour.io/v1
+kind: HTTPProxy
+metadata:
+  labels:
+    app: kibana
+  name: kibana-httpproxy
+  namespace: kube-logging
+spec:
+  routes:
+  - conditions:
+    - prefix: /
+    pathRewritePolicy:
+      replacePrefix:
+      - prefix: /
+        replacement: /
+    services:
+    - name: kibana
+      port: 5601
+  virtualhost:
+    fqdn: kibana.tap.aws.samarsinghal.com
+    tls:
+      secretName: kibana-tls

@@ -1,0 +1,44 @@
+apiVersion: v1
+kind: Secret
+metadata:
+  name: workload-git-auth
+  namespace: tap-install
+type: Opaque
+stringData:
+  content.yaml: |
+    git:
+      ingress_domain: tap.aws.samarsinghal.com
+      host: https://github.com
+      username: samarsinghal
+      password: Github1025
+      caFile: |
+        -----BEGIN CERTIFICATE-----
+        MIIFEzCCA3ugAwIBAgIQPCNyibwNU68KxTHCayp9kTANBgkqhkiG9w0BAQsFADCB
+        oTEeMBwGA1UEChMVbWtjZXJ0IGRldmVsb3BtZW50IENBMTswOQYDVQQLDDJzYW1h
+        cnNpbmdoYWxAc3NhbWFyLWEwMS52bXdhcmUuY29tIChzYW1hciBzaW5naGFsKTFC
+        MEAGA1UEAww5bWtjZXJ0IHNhbWFyc2luZ2hhbEBzc2FtYXItYTAxLnZtd2FyZS5j
+        b20gKHNhbWFyIHNpbmdoYWwpMB4XDTIwMDkyODIxMjU0M1oXDTMwMDkyODIxMjU0
+        M1owgaExHjAcBgNVBAoTFW1rY2VydCBkZXZlbG9wbWVudCBDQTE7MDkGA1UECwwy
+        c2FtYXJzaW5naGFsQHNzYW1hci1hMDEudm13YXJlLmNvbSAoc2FtYXIgc2luZ2hh
+        bCkxQjBABgNVBAMMOW1rY2VydCBzYW1hcnNpbmdoYWxAc3NhbWFyLWEwMS52bXdh
+        cmUuY29tIChzYW1hciBzaW5naGFsKTCCAaIwDQYJKoZIhvcNAQEBBQADggGPADCC
+        AYoCggGBAN1L5py6wppiwiiat3cr+l+Tm17uJRD5vSvAqfJK3wlPSnYEG6Q/Q255
+        lkoHlkD0FfAoBWW/DiKHn/O1p0P242nmvdTlNwBNByPgRK0D81WEIcmXp7hEpmcw
+        JbJTnhUAXKhiXJvssFJgnsgX34xiRZjMxkBVassXKeW0CnvhEC6CcxYlUBTBD11y
+        EqYSUu6hLX8JtGUghDJ/sQTk4IJNxOHq8kLJvQb5j7E4MqCTgvRPQTVNPctx+lCW
+        7SYvRjtxJQOsx+FtPhFmEiF7+nYy1p9XPXSoubBv5vQcBr9Vf5usepZd/214NdLJ
+        eDyBl3Fgf+SabJziq23EC+BWjrI35AesveLiD5UMhu27dg2MOW9znWbHbwycP1Fv
+        zvPF9EFp17xrr7/m3BmzpAKdAdIh5KKlzqBqh74NEIBsCeeky+hzPMkrfMCY5IOJ
+        r1+dfHmUmd5vltNsvRLuZE5tWMSdmjfLMsAwxbZkGshagzaVY037HKjXK/34nbl4
+        0qIPGKT5NQIDAQABo0UwQzAOBgNVHQ8BAf8EBAMCAgQwEgYDVR0TAQH/BAgwBgEB
+        /wIBADAdBgNVHQ4EFgQUSFj+iW8vTQtqDQ+DhBjqdews000wDQYJKoZIhvcNAQEL
+        BQADggGBAIK8CB63rgUe91d28XB167P7fAs3EnSA6hJ1qDpsFXHonIHDm80PPkSw
+        WcqlTFHtKSLAqLZPJ4f0EALLjYEBRFKxBTsu3xk9gSQ+9zmD5NWRq+vqPCyIGCFo
+        lsEsOm+X8lzQBmEvmtYjWD7w9RfaVEgQfIlt5948fjNntLwT9pH2cnqL8WV+Loka
+        +jpusnmuuJxbVWESM4S7fw/EzlF8pW02W9HyiOqRyg4zayzjYzayBNlJQZvZ1A2i
+        xkHkHmxUl+c5pzu05c8h9b8S1+MRY31TduR+6PceA1KsVMYRrG5FMFHZowKXkPXd
+        vG0ymwA/cQMQ4GRzBhc04oiQn8xrpJexW1D+PwQX0vidtnyDzvwVzDhTXafQbCw0
+        sd9rjZTVtPmSZk1gE9f3sLFoe+jFf4Sp+xy7xHk0PEzNXv1iJx+B8jwyfG+eqsJd
+        +em9WVYDT04GBnJ0SJAtJeYp61h1jfiB0HI+HQZtgPgBbSfkDNhYrcP+XhWXqY6o
+        1tOULrPpZA==
+        -----END CERTIFICATE-----
