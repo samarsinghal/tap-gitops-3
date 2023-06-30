@@ -10,7 +10,7 @@ stringData:
       ingress_domain: tap.aws.samarsinghal.com
       host: https://github.com
       username: samarsinghal
-      password: Github1025
+      password: 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
       caFile: |
         -----BEGIN CERTIFICATE-----
         MIIFEzCCA3ugAwIBAgIQPCNyibwNU68KxTHCayp9kTANBgkqhkiG9w0BAQsFADCB
