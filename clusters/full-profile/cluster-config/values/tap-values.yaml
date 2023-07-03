@@ -38,7 +38,7 @@ tap_install:
         -----END CERTIFICATE-----
     ceip_policy_disclosed: true
     profile: full
-    supply_chain: testing_scanning
+    supply_chain: testing
     ootb_supply_chain_basic:
       registry:
         server: harbor.aws.samarsinghal.com
