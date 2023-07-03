@@ -43,8 +43,6 @@ tap_install:
       registry:
         server: harbor.aws.samarsinghal.com
         repository: tap-152/supplychain
-      gitops:
-        ssh_secret: git-secret
       maven:
         repository:
           url: https://nexus-80.aws.samarsinghal.com/repository/maven-central/
@@ -53,8 +51,6 @@ tap_install:
       registry:
         server: harbor.aws.samarsinghal.com
         repository: tap-152/supplychain
-      gitops:
-        ssh_secret: git-secret
       maven:
         repository:
           url: https://nexus-80.aws.samarsinghal.com/repository/maven-central/
@@ -63,8 +59,6 @@ tap_install:
       registry:
         server: harbor.aws.samarsinghal.com
         repository: tap-152/supplychain
-      gitops:
-        ssh_secret: git-secret
       maven:
         repository:
           url: https://nexus-80.aws.samarsinghal.com/repository/maven-central/
