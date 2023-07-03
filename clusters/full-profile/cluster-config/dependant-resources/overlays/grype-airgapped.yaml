@@ -22,7 +22,7 @@ stringData:
               - name: GRYPE_DB_MAX_ALLOWED_BUILT_AGE
                 value: "720h"
               - name: GRYPE_DB_AUTO_UPDATE
-                value: "false"
+                value: "true"
               - name: GRYPE_DB_UPDATE_URL
                 value: http://10.54.243.82:9000/grype2/databases/listing.json
               - name: GRYPE_DB_VALIDATE_AGE
