@@ -252,8 +252,6 @@ metadata:
     kapp.k14s.io/app: "1657647125051646677"
     kapp.k14s.io/association: v1.1ffcda80f456c9e6f298bc5cfbbe05cb
   name: multi-deliverable-template
-  resourceVersion: "339338834"
-  uid: adf227f7-978a-4778-ba5d-7c308d0d7433
 spec:
   params:
   - default: {}
