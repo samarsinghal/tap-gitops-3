@@ -4,34 +4,34 @@ metadata:
   name: source-test-to-multidelivery
 spec:
   params:
-  - name: maven_repository_url                                                                                                                                                                                                           │
-    value: https://nexus-80.aws.samarsinghal.com/repository/maven-central/                                                                                                                                                               │
-  - name: maven_repository_secret_name                                                                                                                                                                                                   │
-    value: maven-credentials                                                                                                                                                                                                             │
-  - default: main                                                                                                                                                                                                                        │
-    name: gitops_branch                                                                                                                                                                                                                  │
-  - default: supplychain                                                                                                                                                                                                                 │
-    name: gitops_user_name                                                                                                                                                                                                               │
-  - default: supplychain                                                                                                                                                                                                                 │
-    name: gitops_user_email                                                                                                                                                                                                              │
-  - default: supplychain@cluster.local                                                                                                                                                                                                   │
-    name: gitops_commit_message                                                                                                                                                                                                          │
-  - default: ""                                                                                                                                                                                                                          │
-    name: gitops_ssh_secret                                                                                                                                                                                                              │
-  - default: https://github.com/                                                                                                                                                                                                         │
-    name: gitops_server_address                                                                                                                                                                                                          │
-  - default: samarsinghal                                                                                                                                                                                                                │
-    name: gitops_repository_owner                                                                                                                                                                                                        │
-  - default: tap-gitops-deliverables                                                                                                                                                                                                     │
-    name: gitops_repository_name                                                                                                                                                                                                         │
-  - default: github                                                                                                                                                                                                                      │
-    name: gitops_server_kind                                                                                                                                                                                                             │
-  - default: ""                                                                                                                                                                                                                          │
-    name: gitops_commit_branch                                                                                                                                                                                                           │
-  - default: Ready for review by App Owner                                                                                                                                                                                               │
-    name: gitops_pull_request_title                                                                                                                                                                                                      │
-  - default: Generated by TAP supply chain                                                                                                                                                                                               │
-    name: gitops_pull_request_body 
+  - name: maven_repository_url
+    value: https://nexus-80.aws.samarsinghal.com/repository/maven-central/
+  - name: maven_repository_secret_name
+    value: maven-credentials
+  - default: main
+    name: gitops_branch
+  - default: supplychain
+    name: gitops_user_name
+  - default: supplychain
+    name: gitops_user_email
+  - default: supplychain@cluster.local
+    name: gitops_commit_message
+  - default: ""
+    name: gitops_ssh_secret
+  - default: https://github.com/
+    name: gitops_server_address
+  - default: samarsinghal
+    name: gitops_repository_owner
+  - default: tap-gitops-deliverables
+    name: gitops_repository_name
+  - default: github
+    name: gitops_server_kind
+  - default: ""
+    name: gitops_commit_branch
+  - default: Ready for review by App Owner
+    name: gitops_pull_request_title
+  - default: Generated by TAP supply chain
+    name: gitops_pull_request_body
   resources:
   - name: source-provider
     params:
