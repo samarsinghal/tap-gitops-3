@@ -49,22 +49,10 @@ spec:
     templateRef:
       kind: ClusterSourceTemplate
       name: testing-pipeline
-  - name: source-scanner
+  - name: image-provider
     params:
-    - default: scan-policy
-      name: scanning_source_policy
-    - default: blob-source-scan-template
-      name: scanning_source_template
-    sources:
-    - name: source
-      resource: source-tester
-    templateRef:
-      kind: ClusterSourceTemplate
-      name: source-scanner-template
-  - name: image-builder
-    params:
-    - name: serviceAccount
-      value: default
+    - default: default
+      name: serviceAccount
     - name: registry
       value:
         ca_cert_data: |
@@ -110,7 +98,7 @@ spec:
       name: docker_build_extra_args
     sources:
     - name: source
-      resource: source-scanner
+      resource: source-tester
     templateRef:
       kind: ClusterImageTemplate
       options:
@@ -126,19 +114,7 @@ spec:
             operator: Exists
   - images:
     - name: image
-      resource: image-builder
-    name: image-scanner
-    params:
-    - default: scan-policy
-      name: scanning_image_policy
-    - default: private-image-scan-template
-      name: scanning_image_template
-    templateRef:
-      kind: ClusterImageTemplate
-      name: image-scanner-template
-  - images:
-    - name: image
-      resource: image-scanner
+      resource: image-provider
     name: config-provider
     params:
     - name: serviceAccount
