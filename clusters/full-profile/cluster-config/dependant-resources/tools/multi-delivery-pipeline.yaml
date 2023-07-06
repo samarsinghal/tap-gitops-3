@@ -235,12 +235,14 @@ spec:
           -----END CERTIFICATE-----
         repository: tap-152/supplychain
         server: harbor.aws.samarsinghal.com
+    - default: go-git
+      name: gitImplementation
     templateRef:
       kind: ClusterTemplate
       name: multi-deliverable-template
   selector:
     apps.tanzu.vmware.com/has-tests: "true"
-    apps.tanzu.vmware.com/delivery-type: multi
+    apps.tanzu.vmware.com/multi-delivery: "true"
 ---
 apiVersion: carto.run/v1alpha1
 kind: ClusterTemplate
