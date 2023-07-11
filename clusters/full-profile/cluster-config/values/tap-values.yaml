@@ -85,7 +85,7 @@ tap_install:
       gitops:
         server_address: https://github.com/
         repository_owner: samarsinghal
-        repository_name: tap-gitops-deliverables
+        repository_name: tap-gitops-delivery
         branch: "main"
         commit_strategy: pull_request
         pull_request:
